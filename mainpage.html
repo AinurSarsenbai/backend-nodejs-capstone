@@ -1,0 +1,290 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecondChance - Home</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f7f5;
+      color: #25352c;
+    }
+
+    header {
+      background: #287a52;
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    #userDisplay {
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    #logoutBtn {
+      background: white;
+      color: #287a52;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 15px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #logoutBtn:hover {
+      background: #e0eee5;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 35px auto;
+      padding: 20px;
+    }
+
+    #items {
+      display: grid;
+      grid-template-columns:
+        repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 3px 12px #0001;
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card h3 {
+      color: #287a52;
+    }
+
+    .detailsBtn {
+      display: inline-block;
+      margin-top: 10px;
+      background: #287a52;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      text-decoration: none;
+    }
+
+    .detailsBtn:hover {
+      background: #206340;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>SecondChance</h1>
+    <p>Give items a second life!</p>
+
+    <nav>
+      <a href="/mainpage">Home</a>
+
+      <a href="/register" id="registerLink">
+        Register
+      </a>
+
+      <a href="/login" id="loginLink">
+        Login
+      </a>
+
+      <span id="userDisplay" hidden></span>
+
+      <button id="logoutBtn" hidden>
+        Logout
+      </button>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Available Items</h2>
+
+    <div id="items">
+      Loading items...
+    </div>
+  </main>
+
+  <script>
+
+    // SHOW LOGGED-IN USER
+    function checkLogin() {
+
+      const userName =
+        sessionStorage.getItem("userName");
+
+      const token =
+        sessionStorage.getItem("token");
+
+      const userDisplay =
+        document.getElementById("userDisplay");
+
+      const loginLink =
+        document.getElementById("loginLink");
+
+      const registerLink =
+        document.getElementById("registerLink");
+
+      const logoutBtn =
+        document.getElementById("logoutBtn");
+
+      if (userName && token) {
+
+        userDisplay.textContent =
+          "Welcome, " + userName;
+
+        userDisplay.hidden = false;
+
+        loginLink.hidden = true;
+        registerLink.hidden = true;
+
+        logoutBtn.hidden = false;
+
+      } else {
+
+        userDisplay.hidden = true;
+
+        loginLink.hidden = false;
+        registerLink.hidden = false;
+
+        logoutBtn.hidden = true;
+      }
+    }
+
+    // LOGOUT
+    document.getElementById("logoutBtn")
+      .addEventListener("click", function() {
+
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("userName");
+
+        window.location.href = "/mainpage";
+      });
+
+    // LOAD ITEMS
+    async function loadItems() {
+
+      const container =
+        document.getElementById("items");
+
+      try {
+
+        const response = await fetch(
+          "/api/secondchance/items"
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to load items");
+        }
+
+        const items = await response.json();
+
+        container.textContent = "";
+
+        items.forEach(item => {
+
+          const card =
+            document.createElement("div");
+
+          card.className = "card";
+
+          const title =
+            document.createElement("h3");
+
+          title.textContent = item.name;
+
+          const description =
+            document.createElement("p");
+
+          description.textContent =
+            item.description;
+
+          const category =
+            document.createElement("p");
+
+          category.textContent =
+            "Category: " + item.category;
+
+          const condition =
+            document.createElement("p");
+
+          condition.textContent =
+            "Condition: " + (item.condition || "Good");
+
+          const details =
+            document.createElement("a");
+
+          details.className = "detailsBtn";
+
+          details.textContent = "View Details";
+
+          details.href =
+            "/item_detail?id=" +
+            encodeURIComponent(item._id);
+
+          card.append(
+            title,
+            description,
+            category,
+            condition,
+            details
+          );
+
+          container.appendChild(card);
+        });
+
+      } catch (error) {
+
+        container.textContent =
+          "Unable to load items.";
+
+        console.error(error);
+      }
+    }
+
+    // INITIALIZE
+    checkLogin();
+    loadItems();
+
+  </script>
+
+</body>
+</html>

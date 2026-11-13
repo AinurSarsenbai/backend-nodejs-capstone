@@ -1,0 +1,51 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SecondChance - Register</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f7f5; margin: 0; }
+    header { background: #287d53; color: white; padding: 25px; text-align: center; }
+    main { max-width: 420px; margin: 50px auto; padding: 30px; background: white; border-radius: 12px; }
+    input, button { box-sizing: border-box; width: 100%; padding: 12px; margin: 10px 0; }
+    button { background: #287d53; color: white; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SecondChance</h1>
+    <p>Give items a second life!</p>
+    <a href="/mainpage" style="color:white">Home</a>
+  </header>
+  <main>
+    <h2>Register</h2>
+    <form id="registerForm">
+      <input name="name" placeholder="Full Name" required>
+      <input name="email" type="email" placeholder="Email" required>
+      <input name="password" type="password" placeholder="Password" required>
+      <button type="submit">Register</button>
+    </form>
+    <p id="message"></p>
+  </main>
+  <script>
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      const message = document.getElementById("message");
+      try {
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        message.textContent = result.message || result.error || "Registration completed";
+      } catch (error) {
+        message.textContent = "Registration failed";
+      }
+    });
+  </script>
+</body>
+</html>

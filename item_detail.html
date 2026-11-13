@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SecondChance - Item Details</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7f5;
+      color: #25352c;
+    }
+    header {
+      background: #287a52;
+      color: white;
+      text-align: center;
+      padding: 25px;
+    }
+    a { color: #287a52; }
+    header a { color: white; }
+    main {
+      max-width: 650px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 3px 12px #0001;
+    }
+    h2 { color: #287a52; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SecondChance</h1>
+    <p>Give items a second life!</p>
+    <a href="/mainpage">Home</a>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Item Details</h2>
+      <div id="details">Loading...</div>
+    </div>
+  </main>
+
+  <script>
+    async function loadItem() {
+      const params = new URLSearchParams(location.search);
+      const id = params.get("id");
+      const details = document.getElementById("details");
+
+      if (!id) {
+        details.textContent = "No item selected.";
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "/api/secondchance/items/" + encodeURIComponent(id)
+        );
+        if (!response.ok) throw new Error("Item not found");
+
+        const item = await response.json();
+        details.replaceChildren();
+
+        const fields = [
+          ["Name", item.name],
+          ["Description", item.description],
+          ["Category", item.category],
+          ["Condition", item.condition],
+          ["Available", item.available ? "Yes" : "No"]
+        ];
+
+        fields.forEach(([label, value]) => {
+          const p = document.createElement("p");
+          const strong = document.createElement("strong");
+          strong.textContent = label + ": ";
+          p.append(strong, String(value ?? "N/A"));
+          details.appendChild(p);
+        });
+      } catch (error) {
+        details.textContent = "Unable to load item details.";
+      }
+    }
+
+    loadItem();
+  </script>
+</body>
+</html>

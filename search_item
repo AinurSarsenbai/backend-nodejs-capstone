@@ -1,0 +1,120 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SecondChance - Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f7f5;
+      color: #25352c;
+    }
+    header {
+      background: #287a52;
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+    nav a {
+      color: white;
+      margin: 12px;
+    }
+    main {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    input, button {
+      padding: 12px;
+      margin: 5px;
+      border-radius: 6px;
+    }
+    button {
+      background: #287a52;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-top: 25px;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px #0001;
+    }
+    .card h3 { color: #287a52; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SecondChance</h1>
+    <p>Give items a second life!</p>
+    <nav>
+      <a href="/mainpage">Home</a>
+      <a href="/search">Search</a>
+      <a href="/login">Login</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Search Available Items</h2>
+    <input id="category" placeholder="Enter category (e.g. Books)">
+    <button onclick="searchItems()">Search</button>
+    <div id="results"></div>
+  </main>
+
+  <script>
+    async function searchItems() {
+      const category = document.getElementById("category").value.trim();
+      const results = document.getElementById("results");
+      results.textContent = "Searching...";
+
+      try {
+        const response = await fetch("/api/secondchance/items");
+        if (!response.ok) throw new Error("Failed to load items");
+
+        const items = await response.json();
+        const filtered = items.filter(item =>
+          item.category.toLowerCase().includes(category.toLowerCase())
+        );
+
+        results.replaceChildren();
+
+        if (filtered.length === 0) {
+          results.textContent = "No matching items found.";
+          return;
+        }
+
+        filtered.forEach(item => {
+          const card = document.createElement("div");
+          card.className = "card";
+
+          const title = document.createElement("h3");
+          title.textContent = item.name;
+
+          const description = document.createElement("p");
+          description.textContent = item.description;
+
+          const categoryText = document.createElement("p");
+          categoryText.textContent = "Category: " + item.category;
+
+          card.append(title, description, categoryText);
+          results.appendChild(card);
+        });
+      } catch (error) {
+        results.textContent = "Unable to load search results.";
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
+
